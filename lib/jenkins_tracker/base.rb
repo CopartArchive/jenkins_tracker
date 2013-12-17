@@ -6,12 +6,8 @@ module JenkinsTracker
 
     def initialize(options = {})
       raise FileNotFoundError, "Changelog file not found at: #{options[:changelog_file]}" unless File.file?(options[:changelog_file])
-
       @changelog = File.read(options[:changelog_file])
-
       @tracker_client = TrackerClient.new(:token => options[:tracker_token])
-      @tracker_client.use_ssl = true
-
       @job_name = options[:job_name]
       @build_url = options[:build_url]
     end
