@@ -1,3 +1,5 @@
+require 'json'
+
 module JenkinsTracker
   class TrackerClient
 
