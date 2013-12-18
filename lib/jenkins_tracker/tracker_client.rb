@@ -13,6 +13,7 @@ module JenkinsTracker
 
     def add_note_to_story(project_id, story_id, note)
       begin
+	puts "Adding comment to story ##{story_id}..."
         connection["projects/#{project_id}/stories/#{story_id}/comments"].post({ 'text' => note }.to_json)
       rescue => e
         # if the post fails for whatever reason (e.g. invalid story id etc), just ignore it
@@ -22,6 +23,7 @@ module JenkinsTracker
 
     def deliver_story(project_id, story_id)
       begin
+	puts "Changing story status (##{story_id}) to 'Delivered'..."
         connection["projects/#{project_id}/stories/#{story_id}"].put({ 'current_state' => 'delivered' }.to_json)
       rescue => e
         # if the post fails for whatever reason (e.g. invalid story id etc), just ignore it
