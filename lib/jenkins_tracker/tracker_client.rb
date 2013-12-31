@@ -15,7 +15,7 @@ module JenkinsTracker
           resp = JSON.parse(conn["/me"].get)
           @acceptor_id = resp['id']
           @acceptor_name = resp['name']
-        rescue
+        rescue => e
           puts ["An error occurred while trying to find the acceptor id #{@acceptor_token} ", e.message, e.backtrace] * "\n"
         end
       end
