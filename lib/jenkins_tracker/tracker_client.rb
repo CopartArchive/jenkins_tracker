@@ -8,7 +8,8 @@ module JenkinsTracker
     def initialize(options = {})
       @token = options[:token]
       @acceptor_token = options[:acceptor_token]
-      unless @acceptor_id 
+      #unless @acceptor_id 
+      if @acceptor_token
         begin
           conn = RestClient::Resource.new(api_url, :headers => { 'X-TrackerToken' => @acceptor_token, 'Content-Type' => 'application/json' })
           resp = JSON.parse(conn["/me"].get)
