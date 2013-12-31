@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'ostruct'
 
 describe JenkinsTracker::Base do
 
@@ -8,12 +9,16 @@ describe JenkinsTracker::Base do
         :changelog_file => fixture_file_path('git_changelog.txt'),
         :tracker_token => 'xxx',
         :job_name => 'foo_job',
-        :build_url => 'http://jenkins.bitium/com/foo_job/3'
+        :build_url => 'http://jenkins.bitium/com/foo_job/3',
+        :message_str => 'heyo',
+        :message_file => fixture_file_path('tracker-message.txt')
       )
       expect(obj.changelog).to eq( File.read(fixture_file_path('git_changelog.txt')) )
       expect(obj.tracker_client.token).to eq('xxx')
       expect(obj.job_name).to eq('foo_job')
       expect(obj.build_url).to eq('http://jenkins.bitium/com/foo_job/3')
+      expect(obj.message_str).to eq('heyo')
+      expect(obj.message_file_contents).to eq( File.read(fixture_file_path('tracker-message.txt')) )
     end
 
     it 'uses an SSL connection for the Tracker Client' do
@@ -32,6 +37,40 @@ describe JenkinsTracker::Base do
           described_class.new(:changelog_file => changelog_file)
         }.to raise_error(JenkinsTracker::FileNotFoundError, "Changelog file not found at: #{changelog_file}")
       end
+    end
+
+    context 'when message file does not exist' do
+      it 'raises a FileNotFoundError' do
+        changelog_file = fixture_file_path('git_changelog.txt')
+        message_file = '/a/non-existent/file/path'
+
+        expect {
+          described_class.new(
+            :changelog_file => changelog_file,
+            :message_file => message_file
+          )
+        }.to raise_error(JenkinsTracker::FileNotFoundError, "Message file not found at: #{message_file}")
+      end
+    end
+  end
+
+  describe 'with passed messages' do
+    it 'formats them with ENV' do
+      changelog_file = fixture_file_path('git_changelog.txt')
+      change = OpenStruct.new :commit_message => 'A message', :story_id => 1234
+
+      with_str = described_class.new(
+        :changelog_file => changelog_file,
+        :message_str => '%{PATH}'
+      )
+
+      with_file = described_class.new(
+        :changelog_file => changelog_file,
+        :message_file => fixture_file_path('tracker-message.txt')
+      )
+
+      expect(with_str.build_note(change)).to eq(ENV['PATH'])
+      expect(with_file.build_note(change)).to eq("#{ENV['PATH']} #{change.commit_message}\n")
     end
   end
 
